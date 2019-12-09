@@ -102,7 +102,7 @@ export default class Lightbox extends Component {
   }
 
   close = () => {
-    throw new Error('Lightbox.close method is deprecated. Use renderHeader(close) prop instead.')
+    this._overlay.close();
   }
 
   onClose = () => {
@@ -117,6 +117,14 @@ export default class Lightbox extends Component {
     }
   }
 
+  handlePress = () => {
+    if(this.state.isOpen) {
+      this.close();
+    } else {
+      this.open();
+    }
+  }
+
   render() {
     // measure will not return anything useful if we dont attach a onLayout handler on android
     return (
@@ -128,12 +136,12 @@ export default class Lightbox extends Component {
         <Animated.View style={{opacity: this.state.layoutOpacity}}>
           <TouchableHighlight
             underlayColor={this.props.underlayColor}
-            onPress={this.open}
+            onPress={this.handlePress}
           >
             {this.props.children}
           </TouchableHighlight>
         </Animated.View>
-        {this.props.navigator ? false : <LightboxOverlay {...this.getOverlayProps()} />}
+        {this.props.navigator ? false : <LightboxOverlay {...this.getOverlayProps()} ref={overlay => this._overlay = overlay} />}
       </View>
     );
   }
