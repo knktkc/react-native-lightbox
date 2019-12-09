@@ -59,6 +59,7 @@ export default class Lightbox extends Component {
     renderHeader: this.props.renderHeader,
     swipeToDismiss: this.props.swipeToDismiss,
     springConfig: this.props.springConfig,
+    underlayColor: this.props.underlayColor,
     backgroundColor: this.props.backgroundColor,
     children: this.getContent(),
     didOpen: this.props.didOpen,
@@ -117,14 +118,6 @@ export default class Lightbox extends Component {
     }
   }
 
-  handlePress = () => {
-    if(this.state.isOpen) {
-      this.close();
-    } else {
-      this.open();
-    }
-  }
-
   render() {
     // measure will not return anything useful if we dont attach a onLayout handler on android
     return (
@@ -136,7 +129,7 @@ export default class Lightbox extends Component {
         <Animated.View style={{opacity: this.state.layoutOpacity}}>
           <TouchableHighlight
             underlayColor={this.props.underlayColor}
-            onPress={this.handlePress}
+            onPress={this.open}
           >
             {this.props.children}
           </TouchableHighlight>
