@@ -4,8 +4,6 @@ import { Animated, Dimensions, Modal, PanResponder, Platform, StatusBar, StyleSh
 
 const WINDOW_HEIGHT = Dimensions.get('window').height;
 const WINDOW_WIDTH = Dimensions.get('window').width;
-const DRAG_DISMISS_THRESHOLD = 150;
-const STATUS_BAR_OFFSET = (Platform.OS === 'android' ? -25 : 0);
 const isIOS = Platform.OS === 'ios';
 
 const styles = StyleSheet.create({
@@ -86,39 +84,6 @@ export default class LightboxOverlay extends Component {
 
   componentWillMount() {
     this._panResponder = PanResponder.create({
-      // Ask to be the responder:
-      onStartShouldSetPanResponder: (evt, gestureState) => !this.state.isAnimating,
-      onStartShouldSetPanResponderCapture: (evt, gestureState) => !this.state.isAnimating,
-      onMoveShouldSetPanResponder: (evt, gestureState) => !this.state.isAnimating,
-      onMoveShouldSetPanResponderCapture: (evt, gestureState) => !this.state.isAnimating,
-
-      onPanResponderGrant: (evt, gestureState) => {
-        this.state.pan.setValue(0);
-        this.setState({ isPanning: true });
-      },
-      onPanResponderMove: Animated.event([
-        null,
-        { dy: this.state.pan }
-      ]),
-      onPanResponderTerminationRequest: (evt, gestureState) => true,
-      onPanResponderRelease: (evt, gestureState) => {
-        if(Math.abs(gestureState.dy) > DRAG_DISMISS_THRESHOLD) {
-          this.setState({
-            isPanning: false,
-            target: {
-              y: gestureState.dy,
-              x: gestureState.dx,
-              opacity: 1 - Math.abs(gestureState.dy / WINDOW_HEIGHT)
-            }
-          });
-          this.close();
-        } else {
-          Animated.spring(
-            this.state.pan,
-            { toValue: 0, ...this.props.springConfig }
-          ).start(() => { this.setState({ isPanning: false }); });
-        }
-      },
     });
   }
 
@@ -142,13 +107,8 @@ export default class LightboxOverlay extends Component {
       }
     });
 
-    Animated.spring(
-      this.state.openVal,
-      { toValue: 1, ...this.props.springConfig }
-    ).start(() => {
-      this.setState({ isAnimating: false });
-      this.props.didOpen();
-    });
+    this.setState({ isAnimating: false });
+    this.props.didOpen();
   }
 
   close = () => {
@@ -193,7 +153,7 @@ export default class LightboxOverlay extends Component {
     } = this.state;
 
     const lightboxOpacityStyle = {
-      opacity: openVal.interpolate({inputRange: [0, 1], outputRange: [0, target.opacity]})
+      opacity: target.opacity
     };
 
     let handlers;
@@ -210,10 +170,10 @@ export default class LightboxOverlay extends Component {
     }
 
     const openStyle = [styles.open, {
-      left:   openVal.interpolate({inputRange: [0, 1], outputRange: [origin.x, target.x]}),
-      top:    openVal.interpolate({inputRange: [0, 1], outputRange: [origin.y + STATUS_BAR_OFFSET, target.y + STATUS_BAR_OFFSET]}),
-      width:  openVal.interpolate({inputRange: [0, 1], outputRange: [origin.width, WINDOW_WIDTH]}),
-      height: openVal.interpolate({inputRange: [0, 1], outputRange: [origin.height, WINDOW_HEIGHT]}),
+      left:   target.x,
+      top:    target.y - 20,
+      width:  WINDOW_WIDTH,
+      height: WINDOW_HEIGHT,
     }];
 
     const background = (<Animated.View style={[styles.background, { backgroundColor: backgroundColor }, lightboxOpacityStyle]}></Animated.View>);
