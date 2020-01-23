@@ -168,10 +168,14 @@ export default class LightboxOverlay extends Component {
       };
       lightboxOpacityStyle.opacity = this.state.pan.interpolate({inputRange: [-WINDOW_HEIGHT, 0, WINDOW_HEIGHT], outputRange: [0, 1, 0]});
     }
-
+    const offsetY = isIOS &&
+    (WINDOW_HEIGHT === 812 ||
+      WINDOW_WIDTH === 812 ||
+      WINDOW_HEIGHT === 896 ||
+      WINDOW_WIDTH === 896) ? 20 : 15;
     const openStyle = [styles.open, {
       left:   target.x,
-      top:    target.y - 20,
+      top:    target.y - offsetY,
       width:  WINDOW_WIDTH,
       height: WINDOW_HEIGHT,
     }];
@@ -180,7 +184,7 @@ export default class LightboxOverlay extends Component {
     const header = (<Animated.View style={[styles.header, lightboxOpacityStyle]}>{(renderHeader ?
       renderHeader(this.close) :
       (
-        <TouchableOpacity onPress={this.close}>
+        <TouchableOpacity onPress={this.close} onLongPress={this.close}>
           <Text style={styles.closeButton}>×</Text>
         </TouchableOpacity>
       )
@@ -204,7 +208,7 @@ export default class LightboxOverlay extends Component {
     return (
       <Modal visible={isOpen} transparent={true} onRequestClose={() => this.close()}>
         {background}
-        <TouchableHighlight underlayColor={this.props.underlayColor} onPress={this.close}>
+        <TouchableHighlight underlayColor={this.props.underlayColor} onPress={this.close} onLongPress={this.close}>
         {content}
         </TouchableHighlight>
         {header}
